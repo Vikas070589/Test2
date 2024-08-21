@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PPT Generator</title>
+</head>
+<body>
+    <h1>Upload Files and Generate PPT</h1>
+    <form method="POST" enctype="multipart/form-data">
+        <label for="excel_file">Excel File:</label>
+        <input type="file" name="excel_file" required><br><br>
+
+        <label for="pptx_template_file">PPTX Template File:</label>
+        <input type="file" name="pptx_template_file" required><br><br>
+
+        <label for="start_row">Start Row:</label>
+        <input type="number" name="start_row" min="0" required><br><br>
+
+        <label for="end_row">End Row:</label>
+        <input type="number" name="end_row" min="0"><br><br>
+
+        <label for="output_folder">Output Folder:</label>
+        <input type="text" name="output_folder"><br><br>
+
+        <input type="submit" value="Generate PPT">
+    </form>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        <ul class="flashes">
+        {% for category, message in messages %}
+            <li class="{{ category }}">{{ message }}</li>
+        {% endfor %}
+        </ul>
+    {% endif %}
+    {% endwith %}
+</body>
+</html>
