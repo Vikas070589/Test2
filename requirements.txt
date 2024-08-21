@@ -1,3 +1,4 @@
+pywin32==306
 babel==2.15.0
 gitpython==3.1.43
 markdown==3.6
