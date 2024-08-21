@@ -7,6 +7,7 @@ import os
 from pptx import Presentation
 from pptx.util import Pt
 from pptx.enum.text import PP_ALIGN
+import logging
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key_here'  # Replace with your secret key
@@ -17,6 +18,9 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['OUTPUT_FOLDER'] = OUTPUT_FOLDER
+
+# Configure logging
+logging.basicConfig(filename='app.log', level=logging.ERROR)
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -42,6 +46,7 @@ def index():
             return redirect(url_for('index'))
 
         except Exception as e:
+            logging.error("Error in index route: %s", e, exc_info=True)
             flash(str(e), "danger")
             return redirect(url_for('index'))
 
@@ -49,59 +54,85 @@ def index():
 
 
 def generate_ppt_from_excel(excel_file, pptx_template, start_row=0, end_row=None, output_folder='pptx_files'):
-    df = pd.read_excel(excel_file, sheet_name='Summaries')
-    if not end_row:
-        end_row = len(df)
+    try:
+        df = pd.read_excel(excel_file, sheet_name='Summaries')
+        if not end_row:
+            end_row = len(df)
 
-    output_folder_path = os.path.join(app.config['OUTPUT_FOLDER'], output_folder)
-    os.makedirs(output_folder_path, exist_ok=True)
+        output_folder_path = os.path.join(app.config['OUTPUT_FOLDER'], output_folder)
+        os.makedirs(output_folder_path, exist_ok=True)
 
-    for index, row in df.iloc[start_row:end_row].iterrows():
-        prs = Presentation(pptx_template)
+        for index, row in df.iloc[start_row:end_row].iterrows():
+            prs = Presentation(pptx_template)
 
-        shapes_data = {}
-        for column in df.columns:
-            if column in row:
-                value = row[column]
-                if pd.notna(value):
-                    if column == 'Duckers Solution':
-                        shapes_data[column] = replace_bullet_points(value)
+            shapes_data = {}
+            for column in df.columns:
+                if column in row:
+                    value = row[column]
+                    if pd.notna(value):
+                        if column == 'Duckers Solution':
+                            shapes_data[column] = replace_bullet_points(value)
+                        else:
+                            shapes_data[column] = value
                     else:
-                        shapes_data[column] = value
-                else:
-                    shapes_data[column] = ""
+                        shapes_data[column] = ""
 
-        for slide in prs.slides:
-            update_shapes_with_excel_data(slide, shapes_data)
+            for slide in prs.slides:
+                update_shapes_with_excel_data(slide, shapes_data)
 
-        output_pptx_file = os.path.join(output_folder_path, f"{row.get('Case Study Name', 'Slide')}.pptx")
-        prs.save(output_pptx_file)
-        print(f"Saved {output_pptx_file} in {output_folder_path}")
+            output_pptx_file = os.path.join(output_folder_path, f"{row.get('Case Study Name', 'Slide')}.pptx")
+            prs.save(output_pptx_file)
+            print(f"Saved {output_pptx_file} in {output_folder_path}")
 
-    return output_folder_path
+        return output_folder_path
+
+    except Exception as e:
+        logging.error("Error in generate_ppt_from_excel: %s", e, exc_info=True)
+        raise
 
 
 def replace_bullet_points(text):
-    # Replace '*' with '•'
-    return text.replace('*', '• ') if text is not None else ""
+    try:
+        # Replace '*' with '•'
+        return text.replace('*', '• ') if text is not None else ""
+    except Exception as e:
+        logging.error("Error in replace_bullet_points: %s", e, exc_info=True)
+        raise
 
 
 def update_shapes_with_excel_data(slide, shapes_data):
-    for shape in slide.shapes:
-        if shape.has_text_frame:
-            shape_name = shape.name
-            if shape_name in shapes_data:
-                shape.text_frame.text = shapes_data[shape_name] if shapes_data[shape_name] is not None else ""
-                for paragraph in shape.text_frame.paragraphs:
-                    for run in paragraph.runs:
-                        run.font.size = Pt(18)
-                        paragraph.alignment = PP_ALIGN.LEFT
+    try:
+        for shape in slide.shapes:
+            if shape.has_text_frame:
+                shape_name = shape.name
+                if shape_name in shapes_data:
+                    shape.text_frame.text = shapes_data[shape_name] if shapes_data[shape_name] is not None else ""
+                    for paragraph in shape.text_frame.paragraphs:
+                        for run in paragraph.runs:
+                            run.font.size = Pt(18)
+                            paragraph.alignment = PP_ALIGN.LEFT
+    except Exception as e:
+        logging.error("Error in update_shapes_with_excel_data: %s", e, exc_info=True)
+        raise
 
 
 @app.route('/download/<filename>')
 def download_file(filename):
-    return send_from_directory(app.config['OUTPUT_FOLDER'], filename)
+    try:
+        return send_from_directory(app.config['OUTPUT_FOLDER'], filename)
+    except Exception as e:
+        logging.error("Error in download_file: %s", e, exc_info=True)
+        flash('File download failed.', 'danger')
+        return redirect(url_for('index'))
 
+# Custom error handlers
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template('404.html'), 404
+
+@app.errorhandler(500)
+def internal_server_error(e):
+    return render_template('500.html'), 500
 
 if __name__ == '__main__':
     app.run(debug=True)
