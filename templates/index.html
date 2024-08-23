@@ -1,39 +1,189 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PPT Generator</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>URL Scraper & PPT Generator</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/3.2.4/tailwind.min.css">
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        font-family: 'Helvetica Neue', Arial, sans-serif;
+        background-image: url('https://www.duckercarlisle.com/wp-content/uploads/2023/06/AdobeStock_590700058-scaled.jpeg');
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        color: #ffffff;
+        height: 100vh;
+        overflow: hidden;
+    }
+    .top-section {
+        background-color: #f8f9fa; /* Light grey background */
+        color: #333;
+        padding: 20px;
+        position: fixed;
+        width: 100%;
+        top: 0;
+        left: 0;
+        z-index: 1000;
+        display: flex;
+        align-items: flex-start; /* Align items to the top */
+        justify-content: space-between; /* Space out logo and additional content */
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    .top-section img {
+        width: 180px;
+        height: auto;
+    }
+    .top-section .links {
+        display: flex;
+        align-items: center;
+        gap: 15px; /* Decreased space between links */
+        margin-right: 40px; /* Adjusted margin to position items better */
+    }
+    .top-section .links a {
+        color: #004262;
+        font-weight: bold;
+        text-decoration: none;
+        font-size: 1rem;
+        display: flex;
+        align-items: center;
+        transition: color 0.3s ease;
+    }
+    .top-section .links a:hover {
+        color: #002a3a;
+        text-decoration: underline;
+    }
+    .top-section .links i {
+        margin-right: 8px;
+    }
+    .container {
+        background: rgba(255, 255, 255, 0.9);
+        color: #333;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+        max-width: 90%;
+        width: 600px;
+        margin: 120px auto 0;
+        box-sizing: border-box;
+    }
+    h1 {
+        color: #004262;
+        font-size: 1.8rem;
+        margin-bottom: 20px;
+        text-align: center;
+        font-weight: bold;
+    }
+    .form-group {
+        margin-bottom: 15px;
+    }
+    .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: 600;
+        color: #333;
+    }
+    .form-control, .form-select {
+        background-color: #fff;
+        border-radius: 8px;
+        border: 1px solid #ced4da;
+        padding: 10px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+        width: calc(100% - 20px);
+        box-sizing: border-box;
+    }
+    .form-control:focus, .form-select:focus {
+        border-color: #004262;
+        box-shadow: 0 0 0 3px rgba(0, 66, 98, 0.2);
+    }
+    .btn-primary {
+        background-color: #004262;
+        border: none;
+        padding: 10px 15px;
+        font-size: 1rem;
+        border-radius: 8px;
+        color: #fff;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-block;
+        text-align: center;
+    }
+    .btn-primary:hover {
+        background-color: #003355;
+        transform: scale(1.05);
+    }
+    .alert {
+        margin-top: 15px;
+        background-color: #fff3cd;
+        color: #856404;
+        border: 1px solid #ffeeba;
+        border-radius: 8px;
+        padding: 10px;
+    }
+    .alert-warning {
+        background-color: #fff3cd;
+        color: #856404;
+        border: 1px solid #ffeeba;
+        border-radius: 8px;
+        padding: 10px;
+    }
+</style>
 </head>
 <body>
-    <h1>Upload Files and Generate PPT</h1>
-    <form method="POST" enctype="multipart/form-data">
-        <label for="excel_file">Excel File:</label>
-        <input type="file" name="excel_file" required><br><br>
-
-        <label for="pptx_template_file">PPTX Template File:</label>
-        <input type="file" name="pptx_template_file" required><br><br>
-
-        <label for="start_row">Start Row:</label>
-        <input type="number" name="start_row" min="0" required><br><br>
-
-        <label for="end_row">End Row:</label>
-        <input type="number" name="end_row" min="0"><br><br>
-
-        <label for="output_folder">Output Folder:</label>
-        <input type="text" name="output_folder"><br><br>
-
-        <input type="submit" value="Generate PPT">
+<div class="top-section">
+    <img src="https://www.duckercarlisle.com/wp-content/uploads/2022/10/LOGO.svg" alt="Ducker & Carlisle Logo">
+    <div class="links">
+        <a href="https://ducker.box.com/shared/static/l64cuxjsyi26982mrpgm8njyi8v0lgyz.pdf" download>
+            <i class="fas fa-file-pdf"></i>User Guide
+        </a>
+        <a href="https://ducker.box.com/shared/static/dx87kaylonjgfyupn6qf4fanvm1zsw9h.pptx" download>
+            <i class="fas fa-file-powerpoint"></i>PowerPoint Template
+        </a>
+        <a href="https://ducker.box.com/shared/static/dvspn936uqixnqtk1cut0hordv3u9iuw.xlsx" download>
+            <i class="fas fa-file-excel"></i>Excel Template
+        </a>
+    </div>
+</div>
+<div class="container">
+    <h1>URL Scraper & PPT Generator</h1>
+    <form action="/" method="post" enctype="multipart/form-data">
+        <div class="form-group">
+            <label for="csv_file">Upload CSV File with URLs:</label>
+            <input type="file" name="csv_file" class="form-control" required>
+        </div>
+        <div class="form-group">
+            <label for="pptx_template">Upload PowerPoint Template:</label>
+            <input type="file" name="pptx_template" class="form-control" required>
+        </div>
+        <div class="form-group">
+            <label for="output_folder">Output Folder Path:</label>
+            <input type="text" name="output_folder" class="form-control" required>
+        </div>
+        <div class="form-group">
+            <label for="start_row">Starting Row (Excel):</label>
+            <input type="number" name="start_row" class="form-control" value="0">
+        </div>
+        <div class="form-group">
+            <label for="end_row">Ending Row (Excel):</label>
+            <input type="number" name="end_row" class="form-control">
+        </div>
+        <button type="submit" class="btn-primary">Process</button>
     </form>
-
-    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% with messages = get_flashed_messages() %}
     {% if messages %}
-        <ul class="flashes">
-        {% for category, message in messages %}
-            <li class="{{ category }}">{{ message }}</li>
-        {% endfor %}
+    <div class="alert alert-warning">
+        <ul>
+            {% for message in messages %}
+            <li>{{ message }}</li>
+            {% endfor %}
         </ul>
+    </div>
     {% endif %}
     {% endwith %}
+</div>
 </body>
 </html>
